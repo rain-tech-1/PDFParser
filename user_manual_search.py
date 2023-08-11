@@ -22,24 +22,40 @@ class PDFParser:
         """
         self.pdf_path = pdf_path
         self.extracted_text = ""
-
-    def extract_text_from_scanned_pdf(self):
+        self.current_directory = os.getcwd()
+    
+    def extract_images_from_pdf(self):
         """
         Extract text from scanned PDF using Tesseract OCR.
 
         :return: Extracted text from the PDF.
         """
-        images = convert_from_path(self.pdf_path)
+        try:
+            images = convert_from_path(self.pdf_path)
+            for i, image in enumerate(images):
+                image.save(f"{self.current_directory}/data/{i+1}.png")
+                
+        except:
+            return False
+        
+        return True
 
-        for image in images:
-            self.extracted_text += pytesseract.image_to_string(image, lang='tessdata/chi_sim')
-            pdb.set_trace()
+
+        return self.extracted_text
+    def extract_text_from_croped_image(self,croped_image_path):
+        """
+        Extract text from scanned PDF using Tesseract OCR.
+
+        :return: Extracted text from the PDF.
+        """
+
+        image = Image.open(croped_image_path)
+        self.extracted_text = pytesseract.image_to_string(image, lang='tessdata/chi_sim')
         
         data_dict = {"ExtractedText": self.extracted_text}
 
         # Dump the dictionary into a JSON format
         json_data = json.dumps(data_dict)
-
 
         return self.extracted_text
 
@@ -63,10 +79,9 @@ class PDFParser:
 
         :return: Parsed and cleaned text from the user manual.
         """
-        extracted_text = self.extract_text_from_scanned_pdf()
-        cleaned_text = self.remove_header_footer(extracted_text)
-        # Implement logic for further processing or structuring of the content.
-        return cleaned_text
+        status = self.extract_images_from_pdf()
+
+        return status
 
 def create_parser(pdf_path):
     """
