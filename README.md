@@ -8,37 +8,54 @@ This Python script is used to parse a PDF user manual, extract text from it (eve
 
 Before running this script, you need to install some dependencies:
 
-Python 3.10 or higher
-`brew install python`
-
-install conda and make environment
-
-`conda create --name myenv python=3.11`
-`conda activate myenv`
-
-install requirements
-`pip install -r requirements.txt`
-
-Tesseract: An OCR engine.
-`brew install tesseract`
-
-Add Tesseract to your PATH:
-`export PATH=$PATH:/path/to/tesseract`
-
-Poppler: A PDF rendering library.
-`brew install poppler`
-
-For Chinese language support, download the trained data file for Simplified Chinese:
-
-`sudo mkdir -p /usr/local/share/tessdata/`
-`sudo curl -L -o /usr/local/share/tessdata/chi_sim.traineddata https://github.com/tesseract-ocr/tessdata/raw/main/chi_sim.traineddata`
-
-if text detector model not found, download it from
-`sudo wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Jk4eGD7crsqCCg9C9VjCLkMN3ze8kutZ' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/1n/p')&id=1Jk4eGD7crsqCCg9C9VjCLkMN3ze8kutZ" -O craft_mlt_25k.pth && rm -rf /tmp/cookies.txt`
-
-run test detector scrip 
-`python text_detector.py --trained_model=craft_mlt_25k.pth --source_data=path-of-images-folder/`  
-
-# Usage
-
-To use this script, run the main.py: just update pdf_path in main.py
+1. Python 3.10 or higher
+   ```
+   brew install python
+   ```
+2. Install any virtual environment manager (e.g. virtualenv, conda, etc.)
+   1. I am using conda
+   2. Install conda from https://docs.conda.io/en/latest/miniconda.html
+   3. Create a virtual environment
+      ```
+      conda create --name pdf_parser python=3.8
+      ```
+   4. Activate the virtual environment
+      ```
+      conda activate pdf_parser
+      ```
+   5. Install the required packages
+      ```
+      pip install -r requirements.txt
+      ```
+3. Install the required packages
+4. For Mac Users
+   1. Install Tesseract
+      ```
+      brew install tesseract
+      ```
+   2. Install Poppler
+      ```
+      brew install poppler
+      ```
+5. For Linux (Ubuntu-18.04) Users
+   1. Install tesseract
+      ```
+      sudo apt-get install tesseract-ocr
+      ```
+   2. Install poppler
+      ```
+      sudo apt-get install poppler-utils
+      ```
+6. Download the trained data file for Simplified Chinese
+   ```
+   sudo mkdir -p /usr/local/share/tessdata/
+   sudo curl -L -o /usr/local/share/tessdata/chi_sim.traineddata https://github.com/tesseract-ocr/tessdata/raw/main/chi_sim.traineddata
+   ```
+7. Download the text detector model
+   ```
+   sudo wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Jk4eGD7crsqCCg9C9VjCLkMN3ze8kutZ' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/1n/p')&id=1Jk4eGD7crsqCCg9C9VjCLkMN3ze8kutZ" -O craft_mlt_25k.pth && rm -rf /tmp/cookies.txt
+   ```
+8. Run the script
+   ```
+   python main.py
+   ```
