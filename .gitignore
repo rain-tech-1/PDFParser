@@ -1,0 +1,7 @@
+# Ignore Python compiled files
+__pycache__/
+*.py[cod]
+.DS_Store
+/result/
+/crop/
+/data/
