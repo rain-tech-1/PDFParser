@@ -18,7 +18,7 @@ TESSERACT_LANG = os.getenv("TESSERACT_LANG", "eng")
 load_default_model()
 
 
-def main(pdf_path="User manual_Aion S.pdf", save_results="test/"):
+def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
     """
     Main function to read and parse a PDF user manual.
     """
@@ -45,10 +45,7 @@ def main(pdf_path="User manual_Aion S.pdf", save_results="test/"):
                 cropped_image = image[y1:y2, x1:x2]
 
                 # Extract text from croped images
-                tessdata_dir_config = '--tessdata-dir "/usr/local/share/tessdata/"'
-                text = pytesseract.image_to_string(
-                    cropped_image, lang=TESSERACT_LANG, config=tessdata_dir_config
-                )
+                text = pytesseract.image_to_string(cropped_image, lang=TESSERACT_LANG)
 
                 print("Extracted text: ", TESSERACT_LANG)
                 result = {
