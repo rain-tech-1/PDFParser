@@ -8,9 +8,10 @@ import numpy as np
 import pytesseract
 from dotenv import load_dotenv
 from pdf2image import convert_from_path
-
+from utils import NumpyEncoder
 from text_detector.imgproc import PIL2array
 from text_detector.text_detector import detector, load_default_model
+from BERT_Embeddings.embedings import get_embeddings
 
 load_dotenv()
 TESSERACT_LANG = os.getenv("TESSERACT_LANG", "eng")
@@ -40,20 +41,21 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
             for bbox, score_text in zip(bboxes, score_texts):
                 x1, y1 = np.asarray(bbox[0], dtype=np.int32)
                 x2, y2 = np.asarray(bbox[2], dtype=np.int32)
-
-                # Crop bounding boxes
                 cropped_image = image[y1:y2, x1:x2]
 
                 # Extract text from croped images
-                text = pytesseract.image_to_string(cropped_image, lang=TESSERACT_LANG)
+                text = pytesseract.image_to_string(
+                    cropped_image, lang=TESSERACT_LANG
+                ).strip("\n")
 
                 print("Extracted text: ", TESSERACT_LANG)
                 result = {
-                    "page_number": str(page_number),
+                    "display": str(page_number),
                     "bbox": [str(i) for i in [x1, y1, x2, y2]],
                     "text": text,
                     "score_text": str(score_text),
-                    "BERT_embedings": "To Do",
+                    "text_ch_bert": get_embeddings(text),
+                    "text_en": "To Do",
                 }
                 results.append(result)
 
@@ -76,7 +78,7 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
             if not os.path.exists(save_json_at):
                 os.makedirs(save_json_at)
             with open(f"{save_json_at}/results.json", "w") as f:
-                json.dump(results, f, indent=4)
+                json.dump(results, f, indent=4, cls=NumpyEncoder)
 
 
 if __name__ == "__main__":
