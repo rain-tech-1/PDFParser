@@ -1,14 +1,32 @@
 import torch
 from transformers import BertTokenizer, BertModel
 
-# Load the tokenizer for traditional Chinese
-tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+tokenizer, model, quantized_model, device = None, None, None, None
+
+
+def load_models():
+    global tokenizer, model, quantized_model, device
+    # Load the tokenizer for traditional Chinese
+    tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
+    # Load the model for traditional Chinese
+    model = BertModel.from_pretrained("bert-base-chinese")
+    device = torch.device("cpu")
+    # Ensure the model is using CPU
+    model = model.to(device)
+    quantized_model = torch.quantization.quantize_dynamic(
+        model,  # the original model
+        {torch.nn.Linear},  # a set of layers to dynamically quantize
+        dtype=torch.qint8,  # the target dtype for quantized weights
+    )
+    quantized_model.eval()
+    return quantized_model, tokenizer
 
 
 def get_embeddings(text: str):
-    global tokenizer
-    # Create a sample traditional Chinese text
-    text = "我愛Python程式設計"
+    global tokenizer, quantized_model
+
+    if not tokenizer:
+        quantized_model, tokenizer = load_models()
 
     # Tokenize the text
     inputs = tokenizer(text, return_tensors="pt")
@@ -17,12 +35,5 @@ def get_embeddings(text: str):
     device = torch.device("cpu")
     inputs.to(device)
 
-    # Load the model for traditional Chinese
-    model = BertModel.from_pretrained("bert-base-chinese")
-
-    # Ensure the model is using CPU
-    model = model.to(device)
-
-    # Run the data through the model
-    outputs = model(**inputs)
+    outputs = quantized_model(**inputs)
     return outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
