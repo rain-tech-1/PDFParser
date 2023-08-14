@@ -3,30 +3,31 @@ import os
 
 
 slide_list = []
-folder_path =os.getcwd()
+folder_path = os.getcwd()
+
 
 def read_polygons(path):
     coordinates = []
 
-    with open(path, 'r') as file:
-
+    with open(path, "r") as file:
         for line in file:
             line = line.strip()  # Remove newline characters
-            coords = list(map(int, line.split(',')))
+            coords = list(map(int, line.split(",")))
             coordinates.append(coords)
 
-    return(coordinates)
+    return coordinates
+
 
 def all_slides():
-
     # List all files in the folder
     file_names = os.listdir(f"{folder_path}/data")
 
     # Print the list of file names
-    
+
     for file_name in file_names:
         slide_list.append(file_name)
     return True
+
 
 def convert_coordinates(coordinates):
     converted_coordinates = []
@@ -40,21 +41,19 @@ def convert_coordinates(coordinates):
     return converted_coordinates
 
 
-
-
-def crop_image(img,converted_coordinates,slide,folder_path):
+def crop_image(img, converted_coordinates, slide, folder_path):
     cropped_images = []
     for i, coord in enumerate(converted_coordinates):
         cropped_img = img.crop(coord)
         cropped_images.append(cropped_img)
 
         # Save the cropped image
-        cropped_img.save(f'{folder_path}/crop/page_{slide}_croped_{i+1}.png')
+        cropped_img.save(f"{folder_path}/crop/page_{slide}_croped_{i+1}.png")
 
 
 def get_and_save_croped_images():
     status = all_slides()
-    if status ==  True:
+    if status == True:
         for slide in slide_list:
             slide = slide.split(".")
             slide = slide[0]
@@ -62,4 +61,4 @@ def get_and_save_croped_images():
             converted_coordinates = convert_coordinates(coordinates)
             # Open an image file
             img = Image.open(f"{folder_path}/data/{slide}.png")
-            crop_image(img,converted_coordinates,slide,folder_path)
+            crop_image(img, converted_coordinates, slide, folder_path)

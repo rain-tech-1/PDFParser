@@ -16,7 +16,6 @@ def extract_sort_key(filename):
 
 
 def get_list_of_croped_images():
-
     slide_list = []
     for file_name in croped_file_path:
         slide_list.append(file_name)
@@ -28,7 +27,7 @@ def main():
     Main function to read and parse a PDF user manual.
     """
 
-    pdf_path = "/Users/sohaib/Documents/Tesseract/User manual_Aion S.pdf"
+    pdf_path = "User manual_Aion S.pdf"
     parser = create_parser(pdf_path)
     print(
         "read all pdfs slide and save images into folder separate by slide number ..........."

@@ -7,13 +7,16 @@ from pdf2image import convert_from_path
 from PIL import Image
 import json
 import pdb
+
 # Set Tesseract data directory
-os.environ['TESSDATA_PREFIX'] = '/usr/local/share/'
+os.environ["TESSDATA_PREFIX"] = "/usr/local/share/"
+
 
 class PDFParser:
     """
     Class to parse text from scanned PDFs.
     """
+
     def __init__(self, pdf_path):
         """
         Initialize the PDFParser with the provided PDF file path.
@@ -23,7 +26,7 @@ class PDFParser:
         self.pdf_path = pdf_path
         self.extracted_text = ""
         self.current_directory = os.getcwd()
-    
+
     def extract_images_from_pdf(self):
         """
         Extract text from scanned PDF using Tesseract OCR.
@@ -34,15 +37,15 @@ class PDFParser:
             images = convert_from_path(self.pdf_path)
             for i, image in enumerate(images):
                 image.save(f"{self.current_directory}/data/{i+1}.png")
-                
+
         except:
             return False
-        
+
         return True
 
-
         return self.extracted_text
-    def extract_text_from_croped_image(self,croped_image_path):
+
+    def extract_text_from_croped_image(self, croped_image_path):
         """
         Extract text from scanned PDF using Tesseract OCR.
 
@@ -50,8 +53,10 @@ class PDFParser:
         """
 
         image = Image.open(croped_image_path)
-        self.extracted_text = pytesseract.image_to_string(image, lang='tessdata/chi_sim')
-        
+        self.extracted_text = pytesseract.image_to_string(
+            image, lang="tessdata/chi_sim"
+        )
+
         data_dict = {"ExtractedText": self.extracted_text}
 
         # Dump the dictionary into a JSON format
@@ -82,6 +87,7 @@ class PDFParser:
         status = self.extract_images_from_pdf()
 
         return status
+
 
 def create_parser(pdf_path):
     """
