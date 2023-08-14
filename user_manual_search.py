@@ -35,32 +35,12 @@ class PDFParser:
         """
         try:
             images = convert_from_path(self.pdf_path)
-            for i, image in enumerate(images):
-                image.save(f"{self.current_directory}/data/{i+1}.png")
+            
 
         except:
             return False
 
         return True
-
-        return self.extracted_text
-
-    def extract_text_from_croped_image(self, croped_image_path):
-        """
-        Extract text from scanned PDF using Tesseract OCR.
-
-        :return: Extracted text from the PDF.
-        """
-
-        image = Image.open(croped_image_path)
-        self.extracted_text = pytesseract.image_to_string(
-            image, lang="tessdata/chi_sim"
-        )
-
-        data_dict = {"ExtractedText": self.extracted_text}
-
-        # Dump the dictionary into a JSON format
-        json_data = json.dumps(data_dict)
 
         return self.extracted_text
 
