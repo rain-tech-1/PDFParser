@@ -12,6 +12,7 @@ from utils import NumpyEncoder
 from text_detector.imgproc import PIL2array
 from text_detector.text_detector import detector, load_default_model
 from BERT_Embeddings.embedings import get_embeddings
+from translation.chinese_to_english import translate
 
 load_dotenv()
 TESSERACT_LANG = os.getenv("TESSERACT_LANG", "eng")
@@ -27,6 +28,7 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
 
     # Parsing PDF
     images = convert_from_path(pdf_path)
+    name = re.findall(r"pdf/(.*).pdf", pdf_path)[0]
     print(images[1], type(images[1]), len(images))
 
     if images:
@@ -48,14 +50,26 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
                     cropped_image, lang=TESSERACT_LANG
                 ).strip("\n")
 
+                # Translate to english
+                translated_text = translate(text)
+                quantised_ch_embeddings, normal_ch_embeddings = get_embeddings(
+                    text, "ch"
+                )
+                quantised_en_embeddings, normal_en_embeddings = get_embeddings(
+                    translated_text, "ch"
+                )
                 print("Extracted text: ", TESSERACT_LANG)
                 result = {
-                    "display": str(page_number),
+                    "id": f"{name}__{page_number}",
+                    "display": "Picture cloud storage Path",
                     "bbox": [str(i) for i in [x1, y1, x2, y2]],
                     "text": text,
+                    "text_en": translated_text,
                     "score_text": str(score_text),
-                    "text_ch_bert": get_embeddings(text),
-                    "text_en": "To Do",
+                    "text_ch_bert": normal_ch_embeddings,
+                    "text_ch_bert_qq": quantised_ch_embeddings,
+                    "text_en_bert": normal_en_embeddings,
+                    "text_en_bert_qq": quantised_en_embeddings,
                 }
                 results.append(result)
 
