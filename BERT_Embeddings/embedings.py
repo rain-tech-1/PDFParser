@@ -1,5 +1,6 @@
 import torch
 from transformers import BertTokenizer, BertModel
+import numpy as np
 
 tokenizer, model, quantized_model, device = None, None, None, None
 
@@ -37,11 +38,18 @@ def get_embeddings(text: str, lang: str = "en"):
     device = torch.device("cpu")
     inputs.to(device)
 
-    # Quantised model
-    outputs = quantized_model(**inputs)
-    quantized_output = outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
-
     # normal model
     outputs = model(**inputs)
     output = outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
-    return quantized_output, output
+
+    # Assuming that embeddings is your model's embeddings
+    min_val = np.min(output)
+    max_val = np.max(output)
+
+    # Scale embeddings to 0-1
+    embeddings_scaled = (output - min_val) / (max_val - min_val)
+
+    # Quantize the scaled embeddings to the range 0-255
+    quantized_outputs = np.round(embeddings_scaled * 255).astype(np.uint8)
+
+    return quantized_outputs, output

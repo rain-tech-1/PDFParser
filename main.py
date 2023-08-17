@@ -8,7 +8,7 @@ import numpy as np
 import pytesseract
 from dotenv import load_dotenv
 from pdf2image import convert_from_path
-from utils import NumpyEncoder
+from utils import NumpyEncoder, save_image
 from text_detector.imgproc import PIL2array
 from text_detector.text_detector import detector, load_default_model
 from BERT_Embeddings.embedings import get_embeddings
@@ -20,7 +20,7 @@ TESSERACT_LANG = os.getenv("TESSERACT_LANG", "eng")
 load_default_model()
 
 
-def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
+def main(pdf_path="pdf/maintenance manual_Aion LX.pdf", save_results="test/"):
     """
     Main function to read and parse a PDF user manual.
     """
@@ -32,17 +32,41 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
     print(images[1], type(images[1]), len(images))
 
     if images:
-        for page_number, image in enumerate(images[:2]):
-            results = []
+        for page_number, image in enumerate(images):
+            results, text_to_ignore = [], []
             print("Detecting text in images...")
             image = PIL2array(image)
             bboxes, polys, score_texts = detector(image)
             print("Extracting text from images...")
+            bboxes = np.asarray(bboxes, dtype=np.int32)
+            # Convert boxes to x1, x2, x3, x4
+            bboxes = [[box[0][0], box[0][1], box[2][0], box[2][1]] for box in bboxes]
+            # Sort bbox by index 1 (y1)
+            bboxes = sorted(bboxes, key=lambda x: x[1])
+            # Getting headers and Footers (top 3 and bottom 3)
+            headers = bboxes[:3]
+            footers = bboxes[-3:]
+            # Remove headers and footers
+            bboxes = bboxes[3:-3]
+
+            # Extracting text from headers and footers
+            for bbox in headers + footers:
+                x1, y1, x2, y2 = bbox
+                cropped_image = image[y1:y2, x1:x2]
+
+                # Extract text from croped images
+                text = pytesseract.image_to_string(
+                    cropped_image, lang=TESSERACT_LANG
+                ).strip("\n")
+                print("Extracted text: ", text)
+                text_to_ignore.append(text)
+                save_image(
+                    save_results, str(page_number) + "_Ignore_text", cropped_image, bbox
+                )
 
             # Extracting text from images
             for bbox, score_text in zip(bboxes, score_texts):
-                x1, y1 = np.asarray(bbox[0], dtype=np.int32)
-                x2, y2 = np.asarray(bbox[2], dtype=np.int32)
+                x1, y1, x2, y2 = bbox
                 cropped_image = image[y1:y2, x1:x2]
 
                 # Extract text from croped images
@@ -64,6 +88,7 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
                     "display": "Picture cloud storage Path",
                     "bbox": [str(i) for i in [x1, y1, x2, y2]],
                     "text": text,
+                    "text_to_ignore": text_to_ignore,
                     "text_en": translated_text,
                     "score_text": str(score_text),
                     "text_ch_bert": normal_ch_embeddings,
@@ -73,19 +98,7 @@ def main(pdf_path="pdf/User manual_Aion S.pdf", save_results="test/"):
                 }
                 results.append(result)
 
-                # Save cropped images
-                if save_results:
-                    print("Saving Cropped Images ...")
-                    save_cropped_images = (
-                        f"{save_results}/page_number_{page_number}/cropped_image/"
-                    )
-                    if not os.path.exists(save_cropped_images):
-                        os.makedirs(save_cropped_images)
-                    cv2.imwrite(
-                        f"{save_cropped_images}/croped_images_{bbox}.png",
-                        cropped_image,
-                    )
-
+                save_image(save_results, page_number, cropped_image, bbox)
             # Saving Results in Json
             save_json_at = f"{save_results}/page_number_{page_number}/"
             print("Saving results...")
