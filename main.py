@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import uuid
 
 import cv2
 import imgproc
@@ -8,11 +9,12 @@ import numpy as np
 import pytesseract
 from dotenv import load_dotenv
 from pdf2image import convert_from_path
-from utils import NumpyEncoder, save_image
+
+from BERT_Embeddings.embedings import get_embeddings
 from text_detector.imgproc import PIL2array
 from text_detector.text_detector import detector, load_default_model
-from BERT_Embeddings.embedings import get_embeddings
 from translation.chinese_to_english import translate
+from utils import NumpyEncoder, save_image
 
 load_dotenv()
 TESSERACT_LANG = os.getenv("TESSERACT_LANG", "eng")
@@ -76,15 +78,21 @@ def main(pdf_path="pdf/maintenance manual_Aion LX.pdf", save_results="test/"):
 
                 # Translate to english
                 translated_text = translate(text)
-                quantised_ch_embeddings, normal_ch_embeddings = get_embeddings(
-                    text, "ch"
-                )
-                quantised_en_embeddings, normal_en_embeddings = get_embeddings(
-                    translated_text, "ch"
-                )
+                (
+                    quantised_ch_embeddings,
+                    normal_ch_embeddings,
+                    min_max_array_per_column_ch,
+                ) = get_embeddings(text, "ch")
+                (
+                    quantised_en_embeddings,
+                    normal_en_embeddings,
+                    min_max_array_per_column_en,
+                ) = get_embeddings(translated_text, "ch")
+
                 print("Extracted text: ", TESSERACT_LANG)
+
                 result = {
-                    "id": f"{name}__{page_number}",
+                    "id": str(uuid.uuid4()),
                     "display": "Picture cloud storage Path",
                     "bbox": [str(i) for i in [x1, y1, x2, y2]],
                     "text": text,
@@ -95,9 +103,10 @@ def main(pdf_path="pdf/maintenance manual_Aion LX.pdf", save_results="test/"):
                     "text_ch_bert_qq": quantised_ch_embeddings,
                     "text_en_bert": normal_en_embeddings,
                     "text_en_bert_qq": quantised_en_embeddings,
+                    "text_en_bert_qq_min_max": min_max_array_per_column_en,
+                    "text_ch_bert_qq_min_max": min_max_array_per_column_ch,
                 }
                 results.append(result)
-
                 save_image(save_results, page_number, cropped_image, bbox)
             # Saving Results in Json
             save_json_at = f"{save_results}/page_number_{page_number}/"

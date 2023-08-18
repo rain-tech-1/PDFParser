@@ -42,7 +42,9 @@ def get_embeddings(text: str, lang: str = "en"):
     outputs = model(**inputs)
     output = outputs.last_hidden_state.mean(dim=1).squeeze().detach().numpy()
 
+    print("normal model output shape: ", output.shape)
     # Assuming that embeddings is your model's embeddings
+
     min_val = np.min(output)
     max_val = np.max(output)
 
@@ -52,4 +54,4 @@ def get_embeddings(text: str, lang: str = "en"):
     # Quantize the scaled embeddings to the range 0-255
     quantized_outputs = np.round(embeddings_scaled * 255).astype(np.uint8)
 
-    return quantized_outputs, output
+    return quantized_outputs, output, np.asarray([min_val, max_val])
