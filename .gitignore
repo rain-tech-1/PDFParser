@@ -12,3 +12,6 @@ test/*
  [ 17.333334 425.33334 ]].png
 Untitled.ipynb
 .ipynb_checkpoints/Untitled-checkpoint.ipynb
+test_json.zip
+text_detector/weights/craft_ic15_20k.pth
+pdf/MS_SOP16_SOP_20230118.pdf

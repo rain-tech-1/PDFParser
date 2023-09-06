@@ -8,7 +8,7 @@ tokenizer, model, quantized_model, device = None, None, None, None
 def load_models(lang):
     global tokenizer, model, quantized_model, device
 
-    model_name = "bert-base-en" if lang == "en" else "bert-base-chinese"
+    model_name = "bert-base-cased" if lang == "en" else "bert-base-chinese"
     # Load the tokenizer for traditional Chinese
     tokenizer = BertTokenizer.from_pretrained(model_name)
     # Load the model for traditional Chinese
